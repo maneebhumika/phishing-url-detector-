@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Phishing Detection & Awareness</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #0b1120;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 25px 8%;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        header h1 {
+            color: #38bdf8;
+            font-size: 26px;
+        }
+
+        header p {
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+
+        .container {
+            width: 85%;
+            max-width: 900px;
+            margin: 70px auto;
+            text-align: center;
+        }
+
+        .container h2 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .container h2 span {
+            color: #38bdf8;
+        }
+
+        .description {
+            color: #94a3b8;
+            font-size: 17px;
+            margin-bottom: 40px;
+        }
+
+        .scanner {
+            background: #111827;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #1e293b;
+        }
+
+        .scanner input {
+            width: 70%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .scanner button {
+            padding: 15px 25px;
+            margin-left: 8px;
+            border: none;
+            border-radius: 8px;
+            background: #38bdf8;
+            color: #082f49;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .scanner button:hover {
+            opacity: 0.85;
+        }
+.result {
+    margin-top: 25px;
+    padding: 24px;
+    border-radius: 14px;
+    background: #0b1220;
+    border: 1px solid #263449;
+    text-align: left;
+    min-height: 80px;
+    transition: 0.3s ease;
+}
+
+.result h3 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.result .score {
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+.result ul {
+    margin-top: 12px;
+    padding-left: 22px;
+    color: #cbd5e1;
+}
+
+.result li {
+    margin: 8px 0;
+}
+
+.safe {
+    border-color: #22c55e;
+}
+
+.safe h3 {
+    color: #22c55e;
+}
+
+.caution {
+    border-color: #f59e0b;
+}
+
+.caution h3 {
+    color: #f59e0b;
+}
+
+.danger {
+    border-color: #ef4444;
+}
+
+.danger h3 {
+    color: #ef4444;
+}
+
+.scan-title {
+    color: #e2e8f0;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+        .tips {
+            margin-top: 50px;
+            text-align: left;
+        }
+
+        .tips h3 {
+            color: #38bdf8;
+            margin-bottom: 15px;
+        }
+
+        .tips ul {
+            color: #cbd5e1;
+            line-height: 2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🛡️ PhishGuard</h1>
+        <p>Phishing Detection & Cybersecurity Awareness</p>
+    </header>
+
+    <div class="container">
+
+        <h2>Check a <span>Website URL</span></h2>
+
+        <p class="description">
+            Analyze a website URL for common phishing indicators.
+        </p>
+
+        <div class="scanner">
+
+            <input
+                type="text"
+                id="urlInput"
+                placeholder="Enter website URL..."
+            >
+
+            <button onclick="checkURL()">
+                Scan URL
+            </button>
+
+            <div class="result" id="result">
+                Enter a URL above to start the security scan.
+            </div>
+
+        </div>
+
+        <div class="tips">
+
+            <h3>🛡️ Stay Safe From Phishing</h3>
+
+            <ul>
+                <li>Always check the website URL carefully.</li>
+                <li>Do not click suspicious links from unknown sources.</li>
+                <li>Look for HTTPS before entering sensitive information.</li>
+                <li>Never share passwords or OTPs through suspicious websites.</li>
+                <li>Be careful with urgent messages asking you to take immediate action.</li>
+            </ul>
+
+        </div>
+
+    </div>
+
+   <script>
+    async function checkURL() {
+
+        const url = document.getElementById("urlInput").value.trim();
+        const result = document.getElementById("result");
+
+        if (url === "") {
+            result.innerHTML = "⚠️ Please enter a website URL.";
+            return;
+        }
+
+        result.innerHTML = "🔍 Scanning URL...";
+
+        try {
+
+            const response = await fetch("/scan", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "url=" + encodeURIComponent(url)
+            });
+
+            const data = await response.json();
+
+            let resultClass = "";
+
+            if (data.status === "Likely Safe") {
+                resultClass = "safe";
+            } else if (data.status === "Needs Caution") {
+                resultClass = "caution";
+            } else {
+                resultClass = "danger";
+            }
+
+            let html = `
+                <div class="${resultClass}">
+                    <div class="scan-title">SECURITY SCAN RESULT</div>
+                    <h3>${data.status}</h3>
+                    <p class="score">
+                        Risk Score: <strong>${data.score}</strong>
+                    </p>
+            `;
+
+            if (data.warnings.length > 0) {
+
+                html += "<ul>";
+
+                data.warnings.forEach(function(warning) {
+                    html += `<li>⚠️ ${warning}</li>`;
+                });
+
+                html += "</ul>";
+
+            } else {
+
+                html += `
+                    <p>✓ No major warning indicators detected.</p>
+                `;
+            }
+
+            html += `</div>`;
+
+            result.innerHTML = html;
+
+        } catch (error) {
+
+            result.innerHTML =
+                "❌ Something went wrong while scanning the URL.";
+
+            console.error(error);
+        }
+    }
+</script>
+</body>
+</html>
